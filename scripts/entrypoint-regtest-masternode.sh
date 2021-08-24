@@ -79,13 +79,12 @@ masternode() {
   while true; do
     output=$(dash-cli -rpcconnect=dash1 getrawtransaction $registerHash true 2>&1)
     if [[ "$output" == *"No such mempool or blockchain transaction."* || "$output" == *"error code"* ]]; then
-      echo "Protx tx not accepted by genesis node, re-sending..."
+      echo "Protx not accepted by genesis node, re-sending..."
       rawtx=$(dash-cli getrawtransaction $registerHash 2>&1)
       dash-cli sendrawtransaction $rawtx &> /dev/null
       sleep 1
     else
-      echo "Protx tx accepted by genesis node!"
-      echo $output
+      echo "Protx accepted by genesis node!"
       break
     fi
   done

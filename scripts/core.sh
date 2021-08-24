@@ -4,7 +4,6 @@ NODE_IP=$(ifconfig eth0 | grep 'inet' | awk '{print $2}')
 SIGNER_NAME="${SIGNER_NAME:=thorchain}"
 SIGNER_PASSWD="${SIGNER_PASSWD:=password}"
 MASTER_ADDR="${DASH_MASTER_ADDR:=yWAMW2PfX6znBr9zxerJS6vp12nbPecKx6}"
-BLOCK_TIME=${BLOCK_TIME:=5}
 
 initialBlocks=500
 
@@ -105,7 +104,6 @@ NODE_IP                  $NODE_IP
 SIGNER_NAME              $SIGNER_NAME
 SIGNER_PASSWD            $SIGNER_PASSWD
 MASTER_ADDR              $MASTER_ADDR
-BLOCK_TIME               $BLOCK_TIME
 "
 }
 

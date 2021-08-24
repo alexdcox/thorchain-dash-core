@@ -1,5 +1,7 @@
 #!/bin/bash
 
+BLOCK_TIME=${BLOCK_TIME:=5}
+
 . /scripts/core.sh
 
 verifyinstantsendandchainlocks() {
@@ -27,6 +29,8 @@ verifyinstantsendandchainlocks() {
 
 genesis() {
   printthornodeconfig
+  echo "BLOCK_TIME               $BLOCK_TIME"
+
   writedashdconfig
 
   dashd 1>$logPath &
@@ -65,6 +69,15 @@ genesis() {
   dash-cli spork SPORK_17_QUORUM_DKG_ENABLED 0 &> /dev/null
   dash-cli spork SPORK_19_CHAINLOCKS_ENABLED 0 &> /dev/null
   # dash-cli spork SPORK_21_QUORUM_ALL_CONNECTED 1
+
+  while true; do
+    dash-cli generate 1 &> /dev/null
+    count=$(dash-cli quorum list | jq ".llmq_test | length")
+    if [[ "$count" -ge "2" ]]; then
+      break
+    fi
+    sleep 0.1
+  done &
 
   waitforquorumwithname llmq_test
   printtimetostart
