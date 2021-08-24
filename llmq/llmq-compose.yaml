@@ -6,7 +6,7 @@ services:
     hostname: dash1
     image: dashpaytest
     environment:
-      BLOCK_TIME: 1
+      BLOCK_TIME: 5
     entrypoint: "/scripts/entrypoint-regtest-genesis.sh"
     networks:
       dash:

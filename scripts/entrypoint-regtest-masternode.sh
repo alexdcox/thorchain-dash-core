@@ -98,19 +98,18 @@ masternode() {
   echo "Restarting dashd to initiate masternode sync"
   killpidandwait $dashdpid
   sleep 2
-  dashd $FLAGS &>/dash/.dashcore/dashd.log &
+  dashd -connect=$dash1Ip 1>$logPath &
   dashdpid="$!"
 
   echo "Started new dashd process $dashdpid"
   waitforverificationprogresscomplete $NODE_IP
-
   waitformasternodestatus $NODE_IP READY
   waitformasternodesync $NODE_IP
 
   echo "Restarting dashd to force peers to consider this a masternode"
   killpidandwait $dashdpid
   sleep 2
-  dashd $FLAGS &>/dash/.dashcore/dashd.log &
+  dashd -connect=$dash1Ip 1>$logPath &
   dashdpid="$!"
 
   printtimetostart
