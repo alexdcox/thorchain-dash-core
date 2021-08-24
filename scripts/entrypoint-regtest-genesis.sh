@@ -2,6 +2,29 @@
 
 . /scripts/core.sh
 
+verifyinstantsendandchainlocks() {
+  echo "Verifying instantsend and chainlock..."
+  newaddress=$(dash-cli getnewaddress)
+  hash=$(dash-cli sendtoaddress $newaddress 10)
+  sleep $BLOCK_TIME
+  rawtx=$(dash-cli getrawtransaction $hash true)
+  echo "--> tx hash: $hash"
+  instantlock=$(echo "$rawtx" | jq '.instantlock')
+  chainlock=$(echo "$rawtx" | jq '.chainlock')
+  if [[ "$instantlock" == "true" ]]; then
+    echo "--> instantlock OK"
+  else
+    echo "--> instantlock FAILED"
+    sleep infinity
+  fi
+  if [[ "$chainlock" == "true" ]]; then
+    echo "--> chainlock OK"
+  else
+    echo "--> chainlock FAILED"
+    sleep infinity
+  fi
+}
+
 genesis() {
   printthornodeconfig
   writedashdconfig
@@ -9,7 +32,7 @@ genesis() {
   dashd 1>$logPath &
   dashdpid="$!"
 
-  waitforverificationprogresscomplete $NODE_IP
+  waitforverificationprogresscomplete $(hostname)
 
   while true; do
     nextBlockHash="$(dash-cli generate 1 &> /dev/null | jq -r '.[0]')"
@@ -17,9 +40,9 @@ genesis() {
   done &
 
   echo "Generating $initialBlocks initial blocks..."
-  dash-cli generate $initialBlocks
+  dash-cli generate $initialBlocks &> /dev/null
 
-  waitforblock $NODE_IP $initialBlocks
+  waitforblock $(hostname) $initialBlocks
 
   waitforblock dash2 $initialBlocks
   waitformasternodestatus dash2 READY
@@ -33,19 +56,25 @@ genesis() {
   waitformasternodestatus dash4 READY
   waitformasternodesync dash4
 
-  waitforpeerconnections $NODE_IP 3
+  waitforpeerconnections $(hostname) 3
 
   echo "Activating sporks..."
   # dash-cli spork SPORK_2_INSTANTSEND_ENABLED 0
   # dash-cli spork SPORK_3_INSTANTSEND_BLOCK_FILTERING 0
-  dash-cli spork SPORK_9_SUPERBLOCKS_ENABLED 0
-  dash-cli spork SPORK_17_QUORUM_DKG_ENABLED 0
-  dash-cli spork SPORK_19_CHAINLOCKS_ENABLED 0
+  dash-cli spork SPORK_9_SUPERBLOCKS_ENABLED 0 &> /dev/null
+  dash-cli spork SPORK_17_QUORUM_DKG_ENABLED 0 &> /dev/null
+  dash-cli spork SPORK_19_CHAINLOCKS_ENABLED 0 &> /dev/null
   # dash-cli spork SPORK_21_QUORUM_ALL_CONNECTED 1
 
+  waitforquorumwithname llmq_test
   printtimetostart
 
+  sleep $BLOCK_TIME
+  verifyinstantsendandchainlocks
+  sleep 8
+
   echo "Following dashd log from start:"
+
   tail -f -n +1 $logPath
 }
 

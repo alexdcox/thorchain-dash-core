@@ -6,13 +6,13 @@ SIGNER_PASSWD="${SIGNER_PASSWD:=password}"
 MASTER_ADDR="${DASH_MASTER_ADDR:=yWAMW2PfX6znBr9zxerJS6vp12nbPecKx6}"
 BLOCK_TIME=${BLOCK_TIME:=5}
 
-initialBlocks=600
+initialBlocks=500
 
 configPath="/dash/.dashcore/dash.conf"
 logPath="/dash/.dashcore/dashd.log"
 
 waitforverificationprogresscomplete() {
-  echo "Waiting for node verification ($1) ..."
+  echo "Waiting for node ($1) verification..."
   while true; do
     verificationprogress=$(dash-cli -rpcconnect=$1 getblockchaininfo 2>/dev/null | jq -r '.verificationprogress' 2>/dev/null)
     if [[ "$verificationprogress" == "1" ]]; then
@@ -24,7 +24,7 @@ waitforverificationprogresscomplete() {
 }
 
 waitforpeerconnections() {
-  echo "Waiting for node $1 to establish $2 peer connections"
+  echo "Waiting for node ($1) to establish $2 peer connections..."
     while true; do
     peers=$(dash-cli -rpcconnect=$1 getnetworkinfo | jq '.connections')
     if [[ "$peers" -ge "$2" ]]; then
@@ -36,7 +36,7 @@ waitforpeerconnections() {
 }
 
 waitforblock() {
-  echo "Waiting for node $1 to reach block $2"
+  echo "Waiting for node ($1) to reach block $2..."
   while true; do
     block=$(dash-cli -rpcconnect=$1 getblockcount 2>/dev/null)
     if [[ "$block" -ge "$2" ]]; then
@@ -48,7 +48,7 @@ waitforblock() {
 }
 
 waitformasternodestatus() {
-  echo "Waiting for masternode $1 to reach $2 state..."
+  echo "Waiting for masternode ($1) to reach $2 state..."
   while true; do
     mnstatus=$(dash-cli -rpcconnect=$1 masternode status 2>/dev/null)
     mnstate=$(echo $mnstatus | jq -r '.state' 2>/dev/null)
@@ -62,7 +62,7 @@ waitformasternodestatus() {
 }
 
 waitformasternodesync() {
-  echo "Waiting for masternode to reach MASTERNODE_SYNC_FINISHED state ($1) ..."
+  echo "Waiting for masternode ($1) to reach MASTERNODE_SYNC_FINISHED state..."
   while true; do
     mnsyncstatus=$(dash-cli -rpcconnect=$1 mnsync status 2>&1 | jq -r '.AssetName' 2>&1)
     # echo "masternode sync status: $mnsyncstatus"
@@ -72,6 +72,17 @@ waitformasternodesync() {
     sleep 1
   done
   echo "Masternode ready."
+}
+
+waitforquorumwithname() {
+  echo "Waiting for quorum '$1' to be established..."
+  while true; do
+    count=$(dash-cli quorum list | jq ".$1 | length")
+    if [[ "$count" -ge "2" ]]; then
+      break
+    fi
+    sleep 1
+  done
 }
 
 killpidandwait() {

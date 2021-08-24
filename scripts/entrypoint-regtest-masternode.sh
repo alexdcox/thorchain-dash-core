@@ -11,7 +11,7 @@ masternode() {
   dashd -addnode=dash1 1>$logPath &
   dashdpid="$!"
 
-  waitforblock $NODE_IP $initialBlocks
+  waitforblock $(hostname) $initialBlocks
 
   ownerAddress=$(dash-cli getnewaddress)
   collateralAddress=$(dash-cli getnewaddress)
@@ -100,15 +100,17 @@ masternode() {
   dashdpid="$!"
 
   echo "Started new dashd process $dashdpid"
-  waitforverificationprogresscomplete $NODE_IP
-  waitformasternodestatus $NODE_IP READY
-  waitformasternodesync $NODE_IP
+  waitforverificationprogresscomplete $(hostname)
+  waitformasternodestatus $(hostname) READY
+  waitformasternodesync $(hostname)
 
   echo "Adding other masternode peers..."
   dash-cli addnode dash2 add
   dash-cli addnode dash3 add
   dash-cli addnode dash4 add
-  waitforpeerconnections $NODE_IP 3
+  waitforpeerconnections $(hostname) 3
+
+  waitforquorumwithname llmq_test
 
   printtimetostart
 
