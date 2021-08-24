@@ -8,7 +8,7 @@ masternode() {
 
   waitforblock dash1 $initialBlocks
 
-  dashd -connect=dash1 1>$logPath &
+  dashd -addnode=dash1 1>$logPath &
   dashdpid="$!"
 
   waitforblock $NODE_IP $initialBlocks
@@ -56,8 +56,6 @@ masternode() {
   echo "Current addresses and balances:"
   dash-cli listaddressgroupings
 
-  # echo "Generating confirmation blocks..."
-  # dash-cli -rpcconnect=dash1 generatetoaddress 10 $ownerAddress 1> /dev/null
   printmasternodeconfig
 
   echo "Sending protx register command"
@@ -106,11 +104,11 @@ masternode() {
   waitformasternodestatus $NODE_IP READY
   waitformasternodesync $NODE_IP
 
-  echo "Restarting dashd to force peers to consider this a masternode"
-  killpidandwait $dashdpid
-  sleep 2
-  dashd -connect=dash1 1>$logPath &
-  dashdpid="$!"
+  echo "Adding other masternode peers..."
+  dash-cli addnode dash2 add
+  dash-cli addnode dash3 add
+  dash-cli addnode dash4 add
+  waitforpeerconnections $NODE_IP 3
 
   printtimetostart
 

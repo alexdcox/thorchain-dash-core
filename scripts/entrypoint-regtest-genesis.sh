@@ -33,13 +33,15 @@ genesis() {
   waitformasternodestatus dash4 READY
   waitformasternodesync dash4
 
+  waitforpeerconnections $NODE_IP 3
+
   echo "Activating sporks..."
-  dash-cli spork SPORK_2_INSTANTSEND_ENABLED 0
-  dash-cli spork SPORK_3_INSTANTSEND_BLOCK_FILTERING 0
+  # dash-cli spork SPORK_2_INSTANTSEND_ENABLED 0
+  # dash-cli spork SPORK_3_INSTANTSEND_BLOCK_FILTERING 0
   dash-cli spork SPORK_9_SUPERBLOCKS_ENABLED 0
   dash-cli spork SPORK_17_QUORUM_DKG_ENABLED 0
   dash-cli spork SPORK_19_CHAINLOCKS_ENABLED 0
-  dash-cli spork SPORK_21_QUORUM_ALL_CONNECTED 1
+  # dash-cli spork SPORK_21_QUORUM_ALL_CONNECTED 1
 
   printtimetostart
 

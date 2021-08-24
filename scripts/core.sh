@@ -23,6 +23,18 @@ waitforverificationprogresscomplete() {
   echo "Dash node ready."
 }
 
+waitforpeerconnections() {
+  echo "Waiting for node $1 to establish $2 peer connections"
+    while true; do
+    peers=$(dash-cli -rpcconnect=$1 getnetworkinfo | jq '.connections')
+    if [[ "$peers" -ge "$2" ]]; then
+      break
+    fi
+    sleep 1
+  done
+  echo "Node $1 has $2 peers."
+}
+
 waitforblock() {
   echo "Waiting for node $1 to reach block $2"
   while true; do
@@ -134,9 +146,6 @@ regtest=1
 EOF
 }
 
-# llmqchainlocks=llmq_test
-# llmqinstantsend=llmq_test
-
 exitonsigterm() {
   timeToExit=0
   trap "timeToExit=1" SIGINT SIGTERM
@@ -156,5 +165,5 @@ exitonsigterm() {
 startTime="$(date +%s)"
 printtimetostart() {
   duration="$(($(date +%s) - startTime))"
-  echo "Masternode sync complete in ${duration} seconds"
+  echo "Finished setting up the LLMQ in ${duration} seconds"
 }
