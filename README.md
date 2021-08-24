@@ -25,6 +25,11 @@ Start the `docker-compose` stack:
 docker-compose -f ./llmq/llmq-compose.yaml -p dash up
 ```
 
+Attach to `dash1` genesis node logs:
+```
+docker logs -f dash1
+```
+
 Stop and remove the `docker-compose` stack:
 ```
 docker-compose -f ./llmq/llmq-compose.yaml -p dash down --volumes
