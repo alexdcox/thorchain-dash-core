@@ -8,11 +8,6 @@ BLOCK_TIME=${BLOCK_TIME:=5}
 
 initialBlocks=600
 
-dash1Ip="172.32.60.1"
-dash2Ip="172.32.60.2"
-dash3Ip="172.32.60.3"
-dash4Ip="172.32.60.4"
-
 configPath="/dash/.dashcore/dash.conf"
 logPath="/dash/.dashcore/dashd.log"
 
@@ -114,7 +109,6 @@ writedashdconfig() {
   tee "$configPath" >/dev/null <<EOF
 regtest=1
 [regtest]
-  dns=0
   discover=0
   printtoconsole=1
   txindex=1

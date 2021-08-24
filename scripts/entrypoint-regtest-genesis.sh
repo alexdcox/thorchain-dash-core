@@ -21,17 +21,17 @@ genesis() {
 
   waitforblock $NODE_IP $initialBlocks
 
-  waitforblock $dash2Ip $initialBlocks
-  waitformasternodestatus $dash2Ip READY
-  waitformasternodesync $dash2Ip
+  waitforblock dash2 $initialBlocks
+  waitformasternodestatus dash2 READY
+  waitformasternodesync dash2
 
-  waitforblock $dash3Ip $initialBlocks
-  waitformasternodestatus $dash3Ip READY
-  waitformasternodesync $dash3Ip
+  waitforblock dash3 $initialBlocks
+  waitformasternodestatus dash3 READY
+  waitformasternodesync dash3
 
-  waitforblock $dash4Ip $initialBlocks
-  waitformasternodestatus $dash4Ip READY
-  waitformasternodesync $dash4Ip
+  waitforblock dash4 $initialBlocks
+  waitformasternodestatus dash4 READY
+  waitformasternodesync dash4
 
   echo "Activating sporks..."
   dash-cli spork SPORK_2_INSTANTSEND_ENABLED 0

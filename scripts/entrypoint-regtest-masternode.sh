@@ -6,9 +6,9 @@ masternode() {
   printthornodeconfig
   writedashdconfig
 
-  waitforblock $dash1Ip $initialBlocks
+  waitforblock dash1 $initialBlocks
 
-  dashd -connect=$dash1Ip 1>$logPath &
+  dashd -connect=dash1 1>$logPath &
   dashdpid="$!"
 
   waitforblock $NODE_IP $initialBlocks
@@ -27,7 +27,7 @@ masternode() {
   fundAddress=$(dash-cli getnewaddress)
 
   echo "Sending 1001 DASH to masternode fund address $fundAddress"
-  fundHash=$(dash-cli -rpcconnect=$dash1Ip sendtoaddress $fundAddress 1001 2>&1)
+  fundHash=$(dash-cli -rpcconnect=dash1 sendtoaddress $fundAddress 1001 2>&1)
   if [[ "$fundHash" == *"error code"* ]]; then
     echo "Fund transaction failed: $fundHash"
     sleep infinity
@@ -36,7 +36,7 @@ masternode() {
   fi
 
   echo "Sending 1001 DASH to masternode collateral address $collateralAddress"
-  collateralHash=$(dash-cli -rpcconnect=$dash1Ip sendtoaddress $collateralAddress 1001 2>&1)
+  collateralHash=$(dash-cli -rpcconnect=dash1 sendtoaddress $collateralAddress 1001 2>&1)
   if [[ "$collateralHash" == *"error code"* ]]; then
     echo "Collateral transaction failed: $collateralHash"
     sleep infinity
@@ -45,7 +45,7 @@ masternode() {
   fi
 
   echo "Generating confirmation blocks..."
-  dash-cli -rpcconnect=$dash1Ip generate 20
+  dash-cli -rpcconnect=dash1 generate 20
 
   echo "Balance of fund address"
   dash-cli getaddressbalance \"$fundAddress\"
@@ -57,7 +57,7 @@ masternode() {
   dash-cli listaddressgroupings
 
   # echo "Generating confirmation blocks..."
-  # dash-cli -rpcconnect=$dash1Ip generatetoaddress 10 $ownerAddress 1> /dev/null
+  # dash-cli -rpcconnect=dash1 generatetoaddress 10 $ownerAddress 1> /dev/null
   printmasternodeconfig
 
   echo "Sending protx register command"
@@ -79,7 +79,7 @@ masternode() {
   fi
 
   while true; do
-    output=$(dash-cli -rpcconnect=$dash1Ip getrawtransaction $registerHash true 2>&1)
+    output=$(dash-cli -rpcconnect=dash1 getrawtransaction $registerHash true 2>&1)
     if [[ "$output" == *"No such mempool or blockchain transaction."* || "$output" == *"error code"* ]]; then
       echo "Protx tx not accepted by genesis node, re-sending..."
       rawtx=$(dash-cli getrawtransaction $registerHash 2>&1)
@@ -98,7 +98,7 @@ masternode() {
   echo "Restarting dashd to initiate masternode sync"
   killpidandwait $dashdpid
   sleep 2
-  dashd -connect=$dash1Ip 1>$logPath &
+  dashd -connect=dash1 1>$logPath &
   dashdpid="$!"
 
   echo "Started new dashd process $dashdpid"
@@ -109,7 +109,7 @@ masternode() {
   echo "Restarting dashd to force peers to consider this a masternode"
   killpidandwait $dashdpid
   sleep 2
-  dashd -connect=$dash1Ip 1>$logPath &
+  dashd -connect=dash1 1>$logPath &
   dashdpid="$!"
 
   printtimetostart
