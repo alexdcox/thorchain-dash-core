@@ -13,11 +13,21 @@ docker networks not exposed on the host machine.
 ./llmq/llmq.sh
 ```
 
+To see what's going on:
+```
+docker logs -f dash1
+```
+
+To send transactions and interact via the CLI:
+```
+docker exec -it dash1 bash
+```
+
 ## Manually Build and Run
 
 Build the dash container:
 ```
-docker build -t dashpaytest .
+docker build -t github.com/alexdcox/dash .
 ```
 
 Start the `docker-compose` stack:

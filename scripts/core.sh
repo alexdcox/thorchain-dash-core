@@ -7,8 +7,8 @@ MASTER_ADDR="${DASH_MASTER_ADDR:=yWAMW2PfX6znBr9zxerJS6vp12nbPecKx6}"
 
 initialBlocks=500
 
-configPath="/dash/.dashcore/dash.conf"
-logPath="/dash/.dashcore/dashd.log"
+configPath="/home/dash/.dashcore/dash.conf"
+logPath="/home/dash/.dashcore/dashd.log"
 
 waitforverificationprogresscomplete() {
   echo "Waiting for node ($1) verification..."
@@ -49,13 +49,19 @@ waitforblock() {
 waitformasternodestatus() {
   echo "Waiting for masternode ($1) to reach $2 state..."
   while true; do
+    sleep 1
     mnstatus=$(dash-cli -rpcconnect=$1 masternode status 2>/dev/null)
+    if [[ "$mnstatus" == *"Method not found"* ]]; then
+      continue
+    fi
+    if [[ "$mnstatus" == *"This is not a masternode"* ]]; then
+      continue
+    fi
     mnstate=$(echo $mnstatus | jq -r '.state' 2>/dev/null)
     # echo "$(date) Masternode status: [$mnstate] $(echo $mnstatus | jq -r '.status')"
     if [[ "$mnstate" == "$2" ]]; then
       break
     fi
-    sleep 1
   done
   echo "Masternode ready."
 }
@@ -152,6 +158,11 @@ regtest=1
   rpcport=19898
   sporkaddr=yUPxpYgEubT11whAthBorhnjiztcSJ35ze
   sporkkey=cUHWarE1SdgyVV5PBBq73sfD1fuXjDeXAAc2qjfUWZk9PHsyhPsQ
+  zmqpubhashtx=tcp://0.0.0.0:28332
+  zmqpubhashblock=tcp://0.0.0.0:28332
+  zmqpubrawblock=tcp://0.0.0.0:28332
+  zmqpubrawtx=tcp://0.0.0.0:28332
+  zmqpubrawtxlock=tcp://0.0.0.0:28332
 EOF
 }
 

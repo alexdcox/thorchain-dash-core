@@ -13,18 +13,30 @@ masternode() {
 
   waitforblock $(hostname) $initialBlocks
 
-  ownerAddress=$(dash-cli getnewaddress)
-  collateralAddress=$(dash-cli getnewaddress)
+  echo "Creating default wallet"
+  dash-cli createwallet ""
+
+  echo "Determining genesis address from genesis node"
+  genesisAddress=$(dash-cli -rpcconnect=dash1 getaddressesbylabel "" | jq -r 'keys | .[0]')
+  if [[ $genesisAddress == "" ]]; then
+    echo "Failed to request genesis node address"
+    sleep infinity
+  else
+    echo "--> $genesisAddress"
+  fi
+
+  ownerAddress=$(dash-cli getnewaddress "")
+  collateralAddress=$(dash-cli getnewaddress "")
   collateralVout=1
   ipPort="$NODE_IP:19899"
-  votingAddress=$(dash-cli getnewaddress)
+  votingAddress=$(dash-cli getnewaddress "")
   operatorBls=$(dash-cli bls generate)
   operatorPrivkey=$(echo $operatorBls | jq -r '.secret')
   operatorPubkey=$(echo $operatorBls | jq -r '.public')
   operatorReward=0
-  payoutAddress=$(dash-cli getnewaddress)
+  payoutAddress=$(dash-cli getnewaddress "")
   feeSourceAddress=$ownerAddress
-  fundAddress=$(dash-cli getnewaddress)
+  fundAddress=$(dash-cli getnewaddress "")
 
   echo "Sending 1001 DASH to masternode fund address $fundAddress"
   fundHash=$(dash-cli -rpcconnect=dash1 sendtoaddress $fundAddress 1001 2>&1)
@@ -45,7 +57,7 @@ masternode() {
   fi
 
   echo "Generating confirmation blocks..."
-  dash-cli -rpcconnect=dash1 generate 20
+  dash-cli -rpcconnect=dash1 generatetoaddress 20 $genesisAddress
 
   echo "Balance of fund address"
   dash-cli getaddressbalance \"$fundAddress\"
@@ -101,6 +113,8 @@ masternode() {
   echo "Started new dashd process $dashdpid"
   waitforverificationprogresscomplete $(hostname)
   waitformasternodestatus $(hostname) READY
+  dash-cli mnsync next
+  dash-cli mnsync next
   waitformasternodesync $(hostname)
 
   echo "Adding other masternode peers..."

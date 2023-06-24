@@ -4,10 +4,12 @@ BLOCK_TIME=${BLOCK_TIME:=5}
 
 . /scripts/core.sh
 
+genesisAddress=""
+
 verifyinstantsendandchainlocks() {
   echo "Verifying instantsend and chainlock..."
-  newaddress=$(dash-cli getnewaddress)
-  hash=$(dash-cli sendtoaddress $newaddress 10)
+#  newaddress=$(dash-cli getnewaddress "")
+  hash=$(dash-cli sendtoaddress $genesisAddress 10)
   sleep $BLOCK_TIME
   rawtx=$(dash-cli getrawtransaction $hash true)
   echo "--> tx hash: $hash"
@@ -38,15 +40,22 @@ genesis() {
 
   waitforverificationprogresscomplete $(hostname)
 
-  while true; do
-    nextBlockHash="$(dash-cli generate 1 &> /dev/null | jq -r '.[0]')"
-    sleep $BLOCK_TIME
-  done &
+  echo "Creating default wallet"
+  dash-cli createwallet ""
+
+  echo "Creating genesis address"
+  genesisAddress=$(dash-cli getnewaddress "")
+  echo "--> $genesisAddress"
 
   echo "Generating $initialBlocks initial blocks..."
-  dash-cli generate $initialBlocks &> /dev/null
+  dash-cli generatetoaddress $initialBlocks $genesisAddress
 
   waitforblock $(hostname) $initialBlocks
+
+  while true; do
+    nextBlockHash="$(dash-cli generatetoaddress 1 $genesisAddress | jq -r '.[0]')"
+    sleep $BLOCK_TIME
+  done &
 
   waitforblock dash2 $initialBlocks
   waitformasternodestatus dash2 READY
@@ -63,15 +72,15 @@ genesis() {
   waitforpeerconnections $(hostname) 3
 
   echo "Activating sporks..."
-  # dash-cli spork SPORK_2_INSTANTSEND_ENABLED 0
-  # dash-cli spork SPORK_3_INSTANTSEND_BLOCK_FILTERING 0
-  dash-cli spork SPORK_9_SUPERBLOCKS_ENABLED 0 &> /dev/null
-  dash-cli spork SPORK_17_QUORUM_DKG_ENABLED 0 &> /dev/null
-  dash-cli spork SPORK_19_CHAINLOCKS_ENABLED 0 &> /dev/null
-  # dash-cli spork SPORK_21_QUORUM_ALL_CONNECTED 1
+  # dash-cli sporkupdate SPORK_2_INSTANTSEND_ENABLED 0
+  # dash-cli sporkupdate SPORK_3_INSTANTSEND_BLOCK_FILTERING 0
+  dash-cli sporkupdate SPORK_9_SUPERBLOCKS_ENABLED 0
+  dash-cli sporkupdate SPORK_17_QUORUM_DKG_ENABLED 0
+  dash-cli sporkupdate SPORK_19_CHAINLOCKS_ENABLED 0
+  # dash-cli sporkupdate SPORK_21_QUORUM_ALL_CONNECTED 1
 
   while true; do
-    dash-cli generate 1 &> /dev/null
+    dash-cli generatetoaddress 1 $genesisAddress &> /dev/null
     count=$(dash-cli quorum list | jq ".llmq_test | length")
     if [[ "$count" -ge "2" ]]; then
       break
@@ -82,7 +91,11 @@ genesis() {
   waitforquorumwithname llmq_test
   printtimetostart
 
-  sleep $BLOCK_TIME
+  waitBlocks=8
+  waitTime=$((BLOCK_TIME * waitBlocks))
+  echo "Waiting for "$waitTime" seconds ($waitBlocks blocks)"
+  sleep $waitTime
+
   verifyinstantsendandchainlocks
   sleep 8
 
