@@ -30,7 +30,7 @@ verifyinstantsendandchainlocks() {
 }
 
 genesis() {
-  printthornodeconfig
+  printsignerconfig
   echo "BLOCK_TIME               $BLOCK_TIME"
 
   writedashdconfig

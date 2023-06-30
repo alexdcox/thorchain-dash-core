@@ -8,6 +8,9 @@ services:
     environment:
       BLOCK_TIME: 1
     entrypoint: "/scripts/entrypoint-regtest-genesis.sh"
+    ports:
+      - "19898:19898"
+      - "28332:28332"
     networks:
       dash:
         ipv4_address: 172.32.60.1

@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  dash:
+    container_name: dash_mainnet
+    image: dashpay/dashd:latest
+    environment:
+      BLOCK_TIME: 1
+    entrypoint: "/scripts/entrypoint.sh"
+    volumes:
+      - ./mainnet-entrypoint.sh:/scripts/entrypoint.sh
+      - dash_mainnet:/home/dash/.dashcore
+      - ./mainnet-config:/home/dash/.dashcore/dash.conf
+    ports:
+      - "9998:9998"
+      - "28332:28332"
+
+volumes:
+  dash_mainnet:

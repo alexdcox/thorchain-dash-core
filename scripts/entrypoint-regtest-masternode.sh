@@ -3,7 +3,7 @@
 . /scripts/core.sh
 
 masternode() {
-  printthornodeconfig
+  printsignerconfig
   writedashdconfig
 
   waitforblock dash1 $initialBlocks

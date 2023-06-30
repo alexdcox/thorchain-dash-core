@@ -1,12 +1,12 @@
 #!/bin/bash
 
 NODE_IP=$(ifconfig eth0 | grep 'inet' | awk '{print $2}')
-SIGNER_NAME="${SIGNER_NAME:=thorchain}"
-SIGNER_PASSWD="${SIGNER_PASSWD:=password}"
+SIGNER_NAME="${SIGNER_NAME:=user}"
+SIGNER_PASSWD="${SIGNER_PASSWD:=pass}"
 MASTER_ADDR="${DASH_MASTER_ADDR:=yWAMW2PfX6znBr9zxerJS6vp12nbPecKx6}"
 
 initialBlocks=500
-
+dashdpid=""
 configPath="/home/dash/.dashcore/dash.conf"
 logPath="/home/dash/.dashcore/dashd.log"
 
@@ -103,9 +103,9 @@ killpidandwait() {
   echo "Process $1 terminated."
 }
 
-printthornodeconfig() {
+printsignerconfig() {
   echo "
----------------- Thornode Configuration ----------------
+---------------- Signer Configuration ----------------
 NODE_IP                  $NODE_IP
 SIGNER_NAME              $SIGNER_NAME
 SIGNER_PASSWD            $SIGNER_PASSWD
